@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Rowing Analytics{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+{% if test_saved %}
+<div class="banner banner-success">Test saved ✓</div>
+{% endif %}
+<section class="cards">
+  <div class="card stat">
+    <span class="stat-label">Total meters</span>
+    <span class="stat-value">{{ stats.total_meters }}</span>
+  </div>
+  <div class="card stat">
+    <span class="stat-label">Total workouts</span>
+    <span class="stat-value">{{ stats.total_workouts }}</span>
+  </div>
+  <div class="card stat">
+    <span class="stat-label">Avg HR</span>
+    <span class="stat-value">{% if stats.avg_hr is none %}—{% else %}{{ stats.avg_hr | round(1) }}{% endif %}</span>
+  </div>
+  {% if best_cards %}
+  {% for card in best_cards %}
+  <div class="card stat">
+    <span class="stat-label">{{ card.label }}</span>
+    <span class="stat-value">{{ card.split_formatted or "—" }}</span>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="card stat">
+    <span class="stat-label">Best tests</span>
+    <span class="stat-value">—</span>
+  </div>
+  {% endif %}
+</section>
+<section class="card chart-card">
+  <h2>Weekly meters</h2>
+  <div class="chart-wrap">
+    <canvas id="weekly-meters" aria-label="Weekly meters bar chart"></canvas>
+  </div>
+</section>
+<section class="card chart-card">
+  <h2>Heart rate vs split</h2>
+  {% if has_hr_data %}
+  <div class="chart-wrap">
+    <canvas id="hr-vs-split" aria-label="Heart rate vs split scatter chart"></canvas>
+  </div>
+  {% else %}
+  <p class="empty">No HR data yet</p>
+  {% endif %}
+</section>
+<section class="card chart-card">
+  <h2>Test progression</h2>
+  {% if has_tests %}
+  <div class="chart-wrap">
+    <canvas id="test-progression" aria-label="Test progression chart"></canvas>
+  </div>
+  {% else %}
+  <p class="empty">No tests yet</p>
+  {% endif %}
+</section>
+{% endblock %}
+{% block scripts %}
+<script id="chart-data" type="application/json">{{ chart_data | tojson }}</script>
+<script src="/static/app.js"></script>
+{% endblock %}

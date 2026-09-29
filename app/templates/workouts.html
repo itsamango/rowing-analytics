@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Workouts · Rowing Analytics{% endblock %}
+{% block content %}
+<h1>Workouts</h1>
+<nav class="tabs">
+  {% for tab in tabs %}
+  <a class="tab{% if tab.active %} active{% endif %}" href="{{ tab.href }}">{{ tab.label }}</a>
+  {% endfor %}
+</nav>
+{% if rows %}
+<section class="card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Pieces</th>
+        <th>Total meters</th>
+        <th>Total time</th>
+        <th>Avg HR</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td><a href="/ui/workouts/{{ row.id }}">{{ row.date }}</a></td>
+        <td>{{ row.workout_type }}</td>
+        <td>{{ row.piece_count }}</td>
+        <td>{{ row.total_meters }}</td>
+        <td>{{ row.total_time }}</td>
+        <td>{{ row.avg_hr }}</td>
+        <td>{{ row.notes }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% else %}
+<section class="card">
+  <p class="empty">No workouts yet — log one on the Quick log page.</p>
+</section>
+{% endif %}
+{% endblock %}

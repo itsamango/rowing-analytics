@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Quick log · Rowing Analytics{% endblock %}
+{% block content %}
+<h1>Quick log</h1>
+<section class="card form-card">
+  <h2>Log a workout</h2>
+  {% if active_form == "workout" and errors %}
+  <div class="banner banner-error" role="alert">
+    <strong>Could not save — please fix:</strong>
+    <ul>
+      {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  <form method="post" action="/ui/quick-log" class="form-grid">
+    <label>Date
+      <input type="date" name="date" value="{{ quick_values.date }}" required>
+    </label>
+    <label>Type
+      <select name="workout_type">
+        {% for option in workout_types %}
+        <option value="{{ option }}"{% if quick_values.workout_type == option %} selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Meters
+      <input type="number" name="meters" min="1" value="{{ quick_values.meters }}" placeholder="10000" required>
+    </label>
+    <label>Split
+      <input type="text" name="split" value="{{ quick_values.split }}" placeholder="2:05.0 — e.g. for a 10k">
+    </label>
+    <label>Total time
+      <input type="text" name="total_time" value="{{ quick_values.total_time }}" placeholder="42:30">
+    </label>
+    <p class="form-hint">Fill in Split OR Total time — exactly one.</p>
+    <label>Avg HR
+      <input type="number" name="avg_hr" min="1" value="{{ quick_values.avg_hr }}">
+    </label>
+    <label>Max HR
+      <input type="number" name="max_hr" min="1" value="{{ quick_values.max_hr }}">
+    </label>
+    <label>SPM
+      <input type="number" name="spm" min="0" step="0.1" value="{{ quick_values.spm }}">
+    </label>
+    <label>Notes
+      <input type="text" name="notes" value="{{ quick_values.notes }}">
+    </label>
+    <button type="submit">Log workout</button>
+  </form>
+</section>
+<section class="card form-card">
+  <h2>Record a test</h2>
+  {% if active_form == "erg_test" and errors %}
+  <div class="banner banner-error" role="alert">
+    <strong>Could not save — please fix:</strong>
+    <ul>
+      {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  <form method="post" action="/ui/erg-test" class="form-grid">
+    <label>Date
+      <input type="date" name="date" value="{{ erg_values.date }}" required>
+    </label>
+    <label>Distance (m)
+      <input type="number" name="distance" min="1" value="{{ erg_values.distance }}" placeholder="2000" required>
+    </label>
+    <p class="form-hint">Distances are in meters — 2000 = 2k.</p>
+    <label>Time
+      <input type="text" name="time" value="{{ erg_values.time }}" placeholder="7:52.5" required>
+    </label>
+    <label>Avg HR
+      <input type="number" name="avg_hr" min="1" value="{{ erg_values.avg_hr }}">
+    </label>
+    <label>Max HR
+      <input type="number" name="max_hr" min="1" value="{{ erg_values.max_hr }}">
+    </label>
+    <label>Notes
+      <input type="text" name="notes" value="{{ erg_values.notes }}">
+    </label>
+    <button type="submit">Save test</button>
+  </form>
+</section>
+{% endblock %}

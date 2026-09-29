@@ -1,8 +1,22 @@
 # rowing-analytics
 
-Personal rowing training analytics REST API: workouts with interval pieces, real erg test scores, pace projections, and all-time/weekly stats. Built with FastAPI + SQLAlchemy (SQLite).
+Personal rowing training analytics: workouts with interval pieces, real erg test scores, pace projections, and all-time/weekly stats — a JSON REST API plus a built-in web app (dashboard, workout history, quick log). Built with FastAPI + SQLAlchemy (SQLite).
 
 ## Quickstart
+
+One command — creates the venv and installs dependencies if needed, opens your browser, and runs the server in the foreground (stop with Ctrl-C):
+
+```bash
+./run.sh
+```
+
+Once running, the app lives at `http://localhost:8000` (use a different port with `PORT=9000 ./run.sh`, then `localhost:9000`):
+
+```bash
+PORT=9000 ./run.sh
+```
+
+For development with auto-reload:
 
 ```bash
 python3 -m venv .venv
@@ -11,13 +25,19 @@ pip install -r requirements.txt -r requirements-dev.txt
 uvicorn app.main:app --reload
 ```
 
-Interactive API docs at http://127.0.0.1:8000/docs.
+Interactive API docs at `/docs`.
 
 The SQLite database lives at `data/rowing.db` (created at startup). Override the location with `ROWING_DB_PATH` (absolute path, or relative to the project root):
 
 ```bash
 ROWING_DB_PATH=/tmp/rowing.db uvicorn app.main:app --reload
 ```
+
+## Web app
+
+- **Dashboard (`/`)** — stat cards (total meters, total workouts, avg HR, best test splits), a weekly meters bar chart, a heart-rate-vs-split scatter, and erg test progression over time. Charts render client-side with vendored Chart.js.
+- **Workouts (`/ui/workouts`)** — every session in a table with filter tabs per workout type; click a row for the detail page with the full piece table (splits/watts derived on the fly) and totals.
+- **Quick log (`/ui/quick-log`)** — log a one-piece workout (meters + split or total time, optional HR/SPM/notes) or record an erg test in seconds; validation errors re-render with your values preserved.
 
 ## Concepts
 
@@ -28,7 +48,7 @@ ROWING_DB_PATH=/tmp/rowing.db uvicorn app.main:app --reload
 
 ## API reference
 
-All requests/responses are JSON unless noted. Shared examples used below:
+All requests/responses are JSON unless noted. Examples below assume the server is running at `http://localhost:8000`. Shared examples used below:
 
 - a 4x500m interval workout (declining splits, rising HR)
 - a 10k steady state at 2:15.0 / 150 bpm
@@ -41,7 +61,7 @@ All requests/responses are JSON unless noted. Shared examples used below:
 Liveness check.
 
 ```bash
-curl http://127.0.0.1:8000/health
+curl http://localhost:8000/health
 ```
 
 ```json
@@ -55,7 +75,7 @@ curl http://127.0.0.1:8000/health
 Create a workout with ordered pieces. `pieces[].sequence` is assigned 1, 2, 3… from array order.
 
 ```bash
-curl -X POST http://127.0.0.1:8000/workouts \
+curl -X POST http://localhost:8000/workouts \
   -H "Content-Type: application/json" \
   -d '{
         "date": "2026-09-28",
@@ -92,7 +112,7 @@ curl -X POST http://127.0.0.1:8000/workouts \
 Log a single-piece session. `date` defaults to today, `workout_type` to `steady_state`. Provide exactly one of `time_seconds` or `split` (e.g. `"2:15.0"`).
 
 ```bash
-curl -X POST http://127.0.0.1:8000/workouts/quick-log \
+curl -X POST http://localhost:8000/workouts/quick-log \
   -H "Content-Type: application/json" \
   -d '{"date": "2026-09-26", "meters": 10000, "split": "2:15.0", "avg_hr": 150, "max_hr": 158, "spm": 22, "notes": "easy aerobic 10k"}'
 ```
@@ -123,7 +143,7 @@ List workouts, newest first.
 | `limit` | int | 50 | max 200 |
 
 ```bash
-curl "http://127.0.0.1:8000/workouts?type=steady_state&since=2026-09-01&limit=10"
+curl "http://localhost:8000/workouts?type=steady_state&since=2026-09-01&limit=10"
 ```
 
 #### `GET /workouts/{workout_id}`
@@ -131,7 +151,7 @@ curl "http://127.0.0.1:8000/workouts?type=steady_state&since=2026-09-01&limit=10
 Fetch one workout. `404` if unknown.
 
 ```bash
-curl http://127.0.0.1:8000/workouts/1
+curl http://localhost:8000/workouts/1
 ```
 
 #### `PUT /workouts/{workout_id}`
@@ -139,7 +159,7 @@ curl http://127.0.0.1:8000/workouts/1
 Replace a workout (date, type, notes, pieces) with the same body shape as `POST /workouts`.
 
 ```bash
-curl -X PUT http://127.0.0.1:8000/workouts/1 \
+curl -X PUT http://localhost:8000/workouts/1 \
   -H "Content-Type: application/json" \
   -d '{"date": "2026-09-28", "workout_type": "intervals", "notes": "4x500m, rolling starts", "pieces": [{"meters": 500, "time_seconds": 116.0, "avg_hr": 165, "spm": 31}]}'
 ```
@@ -149,7 +169,7 @@ curl -X PUT http://127.0.0.1:8000/workouts/1 \
 Delete a workout and its pieces. Returns `204`, no body.
 
 ```bash
-curl -X DELETE http://127.0.0.1:8000/workouts/1
+curl -X DELETE http://localhost:8000/workouts/1
 ```
 
 ### Erg tests
@@ -159,7 +179,7 @@ curl -X DELETE http://127.0.0.1:8000/workouts/1
 Record a real score.
 
 ```bash
-curl -X POST http://127.0.0.1:8000/erg-tests \
+curl -X POST http://localhost:8000/erg-tests \
   -H "Content-Type: application/json" \
   -d '{"date": "2026-09-27", "distance_meters": 2000, "time_seconds": 480.0, "avg_hr": 178, "max_hr": 186, "notes": "season opener 2k"}'
 ```
@@ -177,7 +197,7 @@ List tests, newest first.
 | `distance` | int | — | filter by exact distance (e.g. `2000`) |
 
 ```bash
-curl "http://127.0.0.1:8000/erg-tests?distance=2000"
+curl "http://localhost:8000/erg-tests?distance=2000"
 ```
 
 #### `GET /erg-tests/best?distance={meters}`
@@ -185,7 +205,7 @@ curl "http://127.0.0.1:8000/erg-tests?distance=2000"
 Best (lowest-time) test at a given distance. `404` if no test at that distance.
 
 ```bash
-curl "http://127.0.0.1:8000/erg-tests/best?distance=2000"
+curl "http://localhost:8000/erg-tests/best?distance=2000"
 ```
 
 #### `GET /erg-tests/{erg_test_id}`
@@ -193,7 +213,7 @@ curl "http://127.0.0.1:8000/erg-tests/best?distance=2000"
 Fetch one test; `404` if unknown.
 
 ```bash
-curl http://127.0.0.1:8000/erg-tests/1
+curl http://localhost:8000/erg-tests/1
 ```
 
 #### `PUT /erg-tests/{erg_test_id}`
@@ -201,7 +221,7 @@ curl http://127.0.0.1:8000/erg-tests/1
 Replace a test with the same body shape as `POST /erg-tests`.
 
 ```bash
-curl -X PUT http://127.0.0.1:8000/erg-tests/1 \
+curl -X PUT http://localhost:8000/erg-tests/1 \
   -H "Content-Type: application/json" \
   -d '{"date": "2026-09-27", "distance_meters": 2000, "time_seconds": 477.5, "avg_hr": 179, "max_hr": 187, "notes": "corrected 2k"}'
 ```
@@ -211,7 +231,7 @@ curl -X PUT http://127.0.0.1:8000/erg-tests/1 \
 Delete a test. Returns `204`, no body.
 
 ```bash
-curl -X DELETE http://127.0.0.1:8000/erg-tests/1
+curl -X DELETE http://localhost:8000/erg-tests/1
 ```
 
 ### Projections
@@ -225,7 +245,7 @@ Pace projections for standard distances (or one distance).
 | `distance` | int | all standard distances | single distance to project, e.g. `6000` |
 
 ```bash
-curl "http://127.0.0.1:8000/projections?distance=6000"
+curl "http://localhost:8000/projections?distance=6000"
 ```
 
 ```json
@@ -261,7 +281,7 @@ All-time and weekly training summary.
 - `best_tests` — best (lowest-time) test per distinct distance, ordered by distance ascending
 
 ```bash
-curl http://127.0.0.1:8000/stats
+curl http://localhost:8000/stats
 ```
 
 ```json
@@ -295,7 +315,7 @@ curl http://127.0.0.1:8000/stats
 Bulk-load sessions from a UTF-8 CSV file (multipart upload) — see [CSV import](#csv-import) below.
 
 ```bash
-curl -F "file=@sessions.csv" http://127.0.0.1:8000/import/csv
+curl -F "file=@sessions.csv" http://localhost:8000/import/csv
 ```
 
 ```json
@@ -353,7 +373,7 @@ date,kind,workout_type,meters,split,avg_hr,max_hr,spm,notes,workout_notes
 ```
 
 ```bash
-curl -F "file=@sessions.csv" http://127.0.0.1:8000/import/csv
+curl -F "file=@sessions.csv" http://localhost:8000/import/csv
 ```
 
 ```json
@@ -375,16 +395,23 @@ rowing-analytics/
 │   ├── database.py        engine/session, ROWING_DB_PATH resolution
 │   ├── utils.py           split / watts / formatting helpers
 │   ├── projections.py     pace-curve regression + Paul's Law
-│   └── routers/
-│       ├── health.py      GET /health
-│       ├── workouts.py    /workouts CRUD + quick-log
-│       ├── erg_tests.py   /erg-tests CRUD + best
-│       ├── projections.py GET /projections
-│       ├── stats.py       GET /stats
-│       └── import_csv.py  POST /import/csv
-├── tests/                 pytest suite (one file per router)
+│   ├── services.py        shared workout/erg-test create + list logic
+│   ├── routers/
+│   │   ├── health.py      GET /health
+│   │   ├── workouts.py    /workouts CRUD + quick-log
+│   │   ├── erg_tests.py   /erg-tests CRUD + best
+│   │   ├── projections.py GET /projections
+│   │   ├── stats.py       GET /stats
+│   │   └── import_csv.py  POST /import/csv
+│   ├── web/
+│   │   ├── routes.py      web UI routes: dashboard, workouts, quick log
+│   │   └── queries.py     read queries backing the web pages
+│   ├── templates/         Jinja2 templates (base, dashboard, workouts, detail, quick log, error)
+│   └── static/            style.css + app.js, vendored Chart.js (static/vendor/)
+├── tests/                 pytest suite (one file per router + web UI)
 ├── conftest.py            client fixture (tmp DB per test)
 ├── data/rowing.db         default SQLite DB (gitignored)
+├── run.sh                 one-command launcher (venv + deps + browser + server)
 ├── requirements.txt
 ├── requirements-dev.txt
 └── pytest.ini

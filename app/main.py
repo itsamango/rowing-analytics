@@ -2,9 +2,11 @@ from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, engine
 from app.routers import erg_tests, health, import_csv, projections, stats, workouts
+from app.web.routes import STATIC_DIR, router as web_router
 
 
 @asynccontextmanager
@@ -24,8 +26,10 @@ def create_app() -> FastAPI:
         projections.router,
         stats.router,
         import_csv.router,
+        web_router,
     ):
         app.include_router(router)
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
     return app
 
 

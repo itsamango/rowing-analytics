@@ -4,23 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app import services
 from app.database import get_db
-from app.models import IntervalPiece, Workout
-from app.schemas import PieceCreate, QuickLogCreate, WorkoutCreate, WorkoutOut
+from app.models import Workout
+from app.schemas import QuickLogCreate, WorkoutCreate, WorkoutOut
 
 router = APIRouter(prefix="/workouts", tags=["workouts"])
-
-
-def build_piece(sequence: int, data: PieceCreate) -> IntervalPiece:
-    return IntervalPiece(
-        sequence=sequence,
-        meters=data.meters,
-        time_seconds=data.time_seconds,
-        avg_hr=data.avg_hr,
-        max_hr=data.max_hr,
-        spm=data.spm,
-        notes=data.notes,
-    )
 
 
 def get_workout_or_404(db: Session, workout_id: int) -> Workout:
@@ -32,28 +21,12 @@ def get_workout_or_404(db: Session, workout_id: int) -> Workout:
 
 @router.post("", response_model=WorkoutOut, status_code=201)
 def create_workout(data: WorkoutCreate, db: Session = Depends(get_db)) -> Workout:
-    workout = Workout(
-        date=data.date,
-        workout_type=data.workout_type,
-        notes=data.notes,
-        pieces=[build_piece(i, piece) for i, piece in enumerate(data.pieces, start=1)],
-    )
-    db.add(workout)
-    db.commit()
-    return workout
+    return services.create_workout(db, data)
 
 
 @router.post("/quick-log", response_model=WorkoutOut, status_code=201)
 def quick_log(data: QuickLogCreate, db: Session = Depends(get_db)) -> Workout:
-    workout = Workout(
-        date=data.date,
-        workout_type=data.workout_type,
-        notes=data.notes,
-        pieces=[build_piece(1, PieceCreate(meters=data.meters, time_seconds=data.time_seconds, avg_hr=data.avg_hr, max_hr=data.max_hr, spm=data.spm))],
-    )
-    db.add(workout)
-    db.commit()
-    return workout
+    return services.create_workout(db, services.quick_log_to_workout_create(data))
 
 
 @router.get("", response_model=list[WorkoutOut])
@@ -89,7 +62,7 @@ def replace_workout(
     workout.workout_type = data.workout_type
     workout.notes = data.notes
     workout.pieces = [
-        build_piece(i, piece) for i, piece in enumerate(data.pieces, start=1)
+        services.build_piece(i, piece) for i, piece in enumerate(data.pieces, start=1)
     ]
     db.commit()
     return workout

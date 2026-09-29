@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} · Rowing Analytics{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>{{ heading }}</h1>
+  <p class="empty">{{ message }}</p>
+  <p class="center"><a href="/ui/workouts">Back to workouts</a></p>
+</section>
+{% endblock %}

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app import services
 from app.database import get_db
 from app.models import ErgTest
 from app.schemas import ErgTestCreate, ErgTestOut
@@ -18,17 +19,7 @@ def get_erg_test_or_404(db: Session, erg_test_id: int) -> ErgTest:
 
 @router.post("", response_model=ErgTestOut, status_code=201)
 def create_erg_test(data: ErgTestCreate, db: Session = Depends(get_db)) -> ErgTest:
-    erg_test = ErgTest(
-        date=data.date,
-        distance_meters=data.distance_meters,
-        time_seconds=data.time_seconds,
-        avg_hr=data.avg_hr,
-        max_hr=data.max_hr,
-        notes=data.notes,
-    )
-    db.add(erg_test)
-    db.commit()
-    return erg_test
+    return services.create_erg_test(db, data)
 
 
 @router.get("", response_model=list[ErgTestOut])

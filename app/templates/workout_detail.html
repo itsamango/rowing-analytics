@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Workout {{ workout.date }} · Rowing Analytics{% endblock %}
+{% block content %}
+{% if saved %}
+<div class="banner banner-success">Saved ✓</div>
+{% endif %}
+<h1>Workout — {{ workout.date }}</h1>
+<p class="detail-meta">
+  <span class="workout-type">{{ workout.workout_type }}</span>
+  {% if workout.notes %} · {{ workout.notes }}{% endif %}
+</p>
+<section class="card">
+  {% if pieces %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Meters</th>
+        <th>Time</th>
+        <th>Split</th>
+        <th>Watts</th>
+        <th>Avg HR</th>
+        <th>Max HR</th>
+        <th>SPM</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for piece in pieces %}
+      <tr>
+        <td>{{ piece.sequence }}</td>
+        <td>{{ piece.meters }}</td>
+        <td>{{ piece.time }}</td>
+        <td>{{ piece.split }}</td>
+        <td>{{ piece.watts }}</td>
+        <td>{{ piece.avg_hr }}</td>
+        <td>{{ piece.max_hr }}</td>
+        <td>{{ piece.spm }}</td>
+        <td>{{ piece.notes }}</td>
+      </tr>
+      {% endfor %}
+      <tr class="totals-row">
+        <td></td>
+        <td>{{ totals.meters }}</td>
+        <td>{{ totals.time }}</td>
+        <td></td>
+        <td></td>
+        <td>{{ totals.avg_hr }}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">No pieces recorded for this workout.</p>
+  {% endif %}
+</section>
+{% endblock %}

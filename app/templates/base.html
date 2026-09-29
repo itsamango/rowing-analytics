@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Rowing Analytics{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/">Rowing Analytics</a>
+      <nav class="nav-links">
+        <a href="/">Dashboard</a>
+        <a href="/ui/workouts">Workouts</a>
+        <a href="/ui/quick-log">Quick log</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer container">
+    <p>Rowing Analytics</p>
+  </footer>
+  <script src="/static/vendor/chart.umd.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
