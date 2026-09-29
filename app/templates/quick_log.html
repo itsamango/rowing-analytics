@@ -18,11 +18,12 @@
     </label>
     <label>Type
       <select name="workout_type">
-        {% for option in workout_types %}
+        {% for option in workout_types if option != "test" %}
         <option value="{{ option }}"{% if quick_values.workout_type == option %} selected{% endif %}>{{ option }}</option>
         {% endfor %}
       </select>
     </label>
+    <p class="form-hint">For a test or time-trial, use the Record a test form below.</p>
     <label>Meters
       <input type="number" name="meters" min="1" value="{{ quick_values.meters }}" placeholder="10000" required>
     </label>
@@ -49,7 +50,7 @@
   </form>
 </section>
 <section class="card form-card">
-  <h2>Record a test</h2>
+  <h2>Record a test (benchmark)</h2>
   {% if active_form == "erg_test" and errors %}
   <div class="banner banner-error" role="alert">
     <strong>Could not save — please fix:</strong>
@@ -59,6 +60,7 @@
   </div>
   {% endif %}
   <form method="post" action="/ui/erg-test" class="form-grid">
+    <p class="form-hint">For benchmarks — 2k, 6k, 20-min test. e.g. 2k: 2000 m + 7:52.5. A 20-min test: distance covered + 20:00.</p>
     <label>Date
       <input type="date" name="date" value="{{ erg_values.date }}" required>
     </label>
